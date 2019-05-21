@@ -10,3 +10,6 @@ class Child(models.Model):
     gender = models.CharField(choices=GENDER, default='M', max_length=1)
     name = models.CharField(max_length=20)
     parent = models.ForeignKey(Person, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
