@@ -1,3 +1,4 @@
 .idea
 env_bash.txt
 **/migrations
+db.sqlite3
