@@ -6,4 +6,4 @@ class ChildrenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Child
-        fields = '__all__'
+        fields = ('id', 'name',)
