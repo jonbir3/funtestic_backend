@@ -12,4 +12,4 @@ class Person(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{0}'.format(self.id_number)
+        return '{0}'.format(str(self.user))
