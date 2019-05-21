@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'quiz.apps.QuizConfig',
     'reports.apps.ReportsConfig',
     'users.apps.UsersConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
