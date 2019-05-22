@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'giladg.tk',
     'localhost',
+    '127.0.0.1',
 ]
 
 
