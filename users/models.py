@@ -6,6 +6,7 @@ MIN_LENGTH_OF_ID = 8
 MAX_LENGTH_OF_ID = 9
 LENGTH_OF_PHONE = 10
 
+
 class Person(models.Model):
     id_number = models.CharField(max_length=MAX_LENGTH_OF_ID,
                                  validators=[RegexValidator(regex='^[0-9]*$', message='Numbers only', code='num_only')])
