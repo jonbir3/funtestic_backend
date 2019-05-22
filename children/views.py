@@ -20,7 +20,7 @@ class ChildList(APIView):
             children_of_parent = Child.objects.filter(parent=parent)
         except parent.DoesNotExist:
             return Response({'error parent does not exist': self.code_404}, 404)
-        except children_of_parent.DoesNotExist :
+        except children_of_parent.DoesNotExist:
             return Response({'error child does not exist': self.code_404}, 404)
 
         serializer = ChildrenSerializer(children_of_parent, many=True)
