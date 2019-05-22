@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'giladg.tk',
+    'localhost',
+    '127.0.0.1',
 ]
 
 
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'quiz.apps.QuizConfig',
     'reports.apps.ReportsConfig',
     'users.apps.UsersConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
