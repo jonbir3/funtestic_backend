@@ -7,16 +7,15 @@ from children.serializers import ChildrenSerializer
 from users.models import Person
 from . models import Child
 from cryptography.utils import CbcEngine
-from funtestic_backend.settings import DES_KEY, CBC_IV
 
 
 class ChildList(APIView):
-    def get(self):
-        return Response({'Forbidden': self.code_404}, 404)
+    def get(self, request):
+        return Response('Forbidden', status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
         try:
-            parent_id = request.data['id']
+            parent_id = CbcEngine.get_engine().decrypt(request.data['id'])
             parent = Person.objects.get(id_number=parent_id)
             children_of_parent = Child.objects.filter(parent=parent)
         except parent.DoesNotExist:
@@ -31,16 +30,13 @@ class ChildList(APIView):
         parent_id = request.data['parent_id']
         parent = Person.objects.get(id_number=parent_id)
 
-        cbc_engine = CbcEngine(DES_KEY, CBC_IV)
-
-        child_age = cbc_engine.encrypt(request.data['age'])
-        child_gander = cbc_engine.encrypt(request.data['gander'])
-        child_name = cbc_engine.encrypt(request.data['name'])
+        child_age = CbcEngine.get_engine().encrypt(request.data['age'])
+        child_gander = CbcEngine.get_engine().encrypt(request.data['gander'])
+        child_name = CbcEngine.get_engine().encrypt(request.data['name'])
 
         child = Child(parent=parent, name=child_name, gender=child_gander, age=child_age)
 
         serializer = ChildrenSerializer(child, data=request.data)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
