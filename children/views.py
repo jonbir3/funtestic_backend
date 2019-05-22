@@ -15,7 +15,7 @@ class ChildList(APIView):
 
     def post(self, request):
         try:
-            parent_id = CbcEngine.get_engine().decrypt(request.data['id'])
+            parent_id = CbcEngine.get_engine().encrypt(request.data['id'])
             parent = Person.objects.get(id_number=parent_id)
             children_of_parent = Child.objects.filter(parent=parent)
         except parent.DoesNotExist:
@@ -27,7 +27,7 @@ class ChildList(APIView):
         return Response(serializer.data)
 
     def put(self, request):
-        parent_id = CbcEngine.get_engine().decrypt(request.data['parent_id'])
+        parent_id = CbcEngine.get_engine().encrypt(request.data['parent_id'])
         parent = Person.objects.get(id_number=parent_id)
 
         child_age = CbcEngine.get_engine().encrypt(request.data['age'])
