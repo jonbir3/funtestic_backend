@@ -218,7 +218,7 @@ class Des:
         assert_n_bits(right_binary_text, 48)
         groups_of_6_bits = [right_binary_text[i * 6:i * 6 + 6] for i in range(len(right_binary_text) // 6)]
         if len(groups_of_6_bits) != 8:
-            raise Exception('Error while dividing the text to groups of 6 bits')
+            raise ValueError('Error while dividing the text to groups of 6 bits')
         text_after_s_boxes = ''
         for i in range(len(groups_of_6_bits)):  # s-boxes
             assert_n_bits(groups_of_6_bits[i], 6)
