@@ -8,10 +8,11 @@ LENGTH_OF_PHONE = 10
 
 
 class Person(models.Model):
-    id_number = models.CharField(max_length=MAX_LENGTH_OF_ID,
-                                 validators=[RegexValidator(regex='^[0-9]*$', message='Numbers only', code='num_only')])
     phone_number = models.CharField(max_length=LENGTH_OF_PHONE,
-                                    validators=[RegexValidator(regex='^[0-9]*$', message='Numbers only', code='num_only')])
+                                    validators=[RegexValidator(regex='^[0-9]*$',
+                                                               message='Numbers only',
+                                                               code='num_only')],
+                                    primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
