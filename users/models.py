@@ -15,5 +15,7 @@ class Person(models.Model):
                                     primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    # other fields from User: first_name, last_name, email, password
+
     def __str__(self):
         return '{0}'.format(str(self.user))
