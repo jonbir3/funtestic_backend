@@ -2,3 +2,4 @@
 env_bash.txt
 **/migrations
 db.sqlite3
+funtestic_db.sqlite3
