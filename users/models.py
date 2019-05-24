@@ -37,4 +37,6 @@ class Person(models.Model):
         user.username = cbc_engine.encrypt(user.username)
         user.save()
         self.phone_number = cbc_engine.encrypt(self.phone_number)
+        if self.user_id is None:
+            self.user = user
         super(Person, self).save(**kwargs)
