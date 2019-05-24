@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from cryptography.utils import CbcEngine
 
 MIN_LENGTH_OF_ID = 8
 MAX_LENGTH_OF_ID = 9
@@ -18,4 +19,22 @@ class Person(models.Model):
     # other fields from User: first_name, last_name, email, password
 
     def __str__(self):
-        return '{0}'.format(str(self.user))
+        try:
+            first_name = CbcEngine.get_engine().decrypt(self.user.first_name)
+            last_name = CbcEngine.get_engine().decrypt(self.user.last_name)
+        except (TypeError, ValueError):
+            first_name = self.user.first_name
+            last_name = self.user.last_name
+        return '{0} {1}'.format(str(first_name), str(last_name))
+
+    def save(self, **kwargs):
+        cbc_engine = CbcEngine.get_engine()
+
+        user = self.user
+        user.first_name = cbc_engine.encrypt(user.first_name)
+        user.last_name = cbc_engine.encrypt(user.last_name)
+        user.email = cbc_engine.encrypt(user.email)
+        user.username = cbc_engine.encrypt(user.username)
+        user.save()
+        self.phone_number = cbc_engine.encrypt(self.phone_number)
+        super(Person, self).save(**kwargs)
