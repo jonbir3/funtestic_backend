@@ -9,50 +9,46 @@ from . models import Child
 from cryptography.utils import CbcEngine
 
 
+class AddChild(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request):
+        try:
+            phone_number = CbcEngine.get_engine().encrypt(request.data['parent_id'])
+            parent = Person.objects.get(phone_number=phone_number)
+        except KeyError:
+            return Response('One of the fields are missing.', status=status.HTTP_400_BAD_REQUEST)
+        except Person.DoesNotExist:
+            return Response('parent does not exist.', status=status.HTTP_400_BAD_REQUEST)
+
+        request.data['parent_id'] = CbcEngine.get_engine().encrypt(request.data['parent_id'])
+        serializer = ChildrenSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response('The child added successfully!')
+
+
 class ChildList(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         try:
-            parent_id = CbcEngine.get_engine().encrypt(request.data['id'])
-            parent = Person.objects.get(phone_number=parent_id)
-            children_of_parent = Child.objects.filter(parent=parent)
+            phone_number = CbcEngine.get_engine().encrypt(request.data['parent_id'])
+            parent = Person.objects.get(phone_number=phone_number)
+            children_of_parent = Child.objects.filter(parent_id=phone_number)
         except KeyError:
             return Response('id field is missing.', status=status.HTTP_400_BAD_REQUEST)
-        except parent.DoesNotExist:
+        except Person.DoesNotExist:
             return Response('Parent does not exist.', status=status.HTTP_400_BAD_REQUEST)
-        except children_of_parent.DoesNotExist:
+        except Child.DoesNotExist:
             return Response('The parent has no children.', status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = ChildrenSerializer(children_of_parent, many=True)
-        return Response(serializer.data)
-
-    def put(self, request):
-        parent_id = CbcEngine.get_engine().encrypt(request.data['parent_id'])
-        parent = Person.objects.get(id_number=parent_id)
-
-        child_age = CbcEngine.get_engine().encrypt(request.data['age'])
-        child_gander = CbcEngine.get_engine().encrypt(request.data['gander'])
-        child_name = CbcEngine.get_engine().encrypt(request.data['name'])
-
-        child = Child(parent=parent, name=child_name, gender=child_gander, age=child_age)
-
-        serializer = ChildrenSerializer(child, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # def put(self, request):
-    #     parent_id = request.data['parent_id']
-    #     parent = Person.objects.get(id_number=parent_id)
-    #
-    #     cbc_engine = CBC('wwwwwwww', 'qqqqqqqq')
-    #
-    #     child_age = cbc_engine.encrypt(request.data['child_age'])
-    #     child_gander = cbc_engine.encrypt(request.data['child_gander'])
-    #     child_name = cbc_engine.encrypt(request.data['child_name'])
-    #
-    #     child = Child(parent=parent, name=child_name, gender=child_gander, age=child_age)
-    #     child.save()
+        serializer = ChildrenSerializer(children_of_parent, many=True, read_only=True)
+        children_list = []
+        for child in serializer.data:
+            child['parent']['user'].pop('password')
+            children_list.append(CbcEngine.get_engine().decrypt_child_json(child))
+        return Response(children_list)
