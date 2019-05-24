@@ -65,6 +65,6 @@ class TwoFA(APIView):
         # TODO: check if 2fa correct
         is_ok = True
         if not is_ok:
-            return Response('Two factor authentication failed.')
+            raise exceptions.AuthenticationFailed(detail='Two factor authentication failed.')
         token = Token.objects.get(user=request.user)
         return Response({'token': token.key})
