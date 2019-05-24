@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.db import IntegrityError
 from rest_framework import status, authentication, exceptions
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
@@ -43,7 +44,10 @@ class Register(APIView):
         serializer = PersonSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        person = serializer.save()
+        try:
+            person = serializer.save()
+        except IntegrityError:
+            return Response('The user is already exists', status=status.HTTP_400_BAD_REQUEST)
         Token.objects.create(user=person.user)
         return Response('Register successfully!')
 

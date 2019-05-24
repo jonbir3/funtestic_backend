@@ -1,4 +1,5 @@
-from rest_framework import status
+from django.db import IntegrityError
+from rest_framework import status, exceptions
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -17,6 +18,8 @@ class AddChild(APIView):
         try:
             phone_number = CbcEngine.get_engine().encrypt(request.data['parent_id'])
             parent = Person.objects.get(phone_number=phone_number)
+            if parent.user.username != request.user.username:
+                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
         except KeyError:
             return Response('One of the fields are missing.', status=status.HTTP_400_BAD_REQUEST)
         except Person.DoesNotExist:
@@ -26,7 +29,10 @@ class AddChild(APIView):
         serializer = ChildrenSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        try:
+            serializer.save()
+        except IntegrityError:
+            return Response('The child is already exists', status=status.HTTP_400_BAD_REQUEST)
         return Response('The child added successfully!')
 
 
@@ -38,6 +44,8 @@ class ChildList(APIView):
         try:
             phone_number = CbcEngine.get_engine().encrypt(request.data['parent_id'])
             parent = Person.objects.get(phone_number=phone_number)
+            if parent.user.username != request.user.username:
+                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
             children_of_parent = Child.objects.filter(parent_id=phone_number)
         except KeyError:
             return Response('id field is missing.', status=status.HTTP_400_BAD_REQUEST)
