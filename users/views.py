@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.db import IntegrityError
 from rest_framework import status, authentication, exceptions
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from cryptography.utils import CbcEngine
+from users.models import Person
 from users.serializers import PersonSerializer
 
 
@@ -72,3 +74,23 @@ class TwoFA(APIView):
             raise exceptions.AuthenticationFailed(detail='Two factor authentication failed.')
         token = Token.objects.get(user=request.user)
         return Response({'token': token.key})
+
+
+class ParentDetail(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            phone_number = CbcEngine.get_engine().encrypt(request.data['phone_number'])
+            parent = Person.objects.get(phone_number=phone_number)
+            if parent.user.username != request.user.username:
+                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
+        except KeyError:
+            return Response('id_number field is missing.', status=status.HTTP_400_BAD_REQUEST)
+        except Person.DoesNotExist:
+            return Response('Parent does not exist.', status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = PersonSerializer(parent, read_only=True)
+        serializer.data['user'].pop('password')
+        return Response(CbcEngine.get_engine().decrypt_parent_json(serializer.data))

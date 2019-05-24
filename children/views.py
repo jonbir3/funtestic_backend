@@ -48,7 +48,7 @@ class ChildList(APIView):
                 raise exceptions.AuthenticationFailed(detail='Not authorized request.')
             children_of_parent = Child.objects.filter(parent_id=phone_number)
         except KeyError:
-            return Response('id field is missing.', status=status.HTTP_400_BAD_REQUEST)
+            return Response('parent_id field is missing.', status=status.HTTP_400_BAD_REQUEST)
         except Person.DoesNotExist:
             return Response('Parent does not exist.', status=status.HTTP_400_BAD_REQUEST)
         except Child.DoesNotExist:
@@ -68,18 +68,17 @@ class ChildDetail(APIView):
 
     def post(self, request):
         try:
-            phone_number = CbcEngine.get_engine().encrypt(request.data['parent_id'])
-            parent = Person.objects.get(phone_number=phone_number)
-            if parent.user.username != request.user.username:
-                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
             id_number = CbcEngine.get_engine().encrypt(request.data['id_number'])
             child = Child.objects.get(id_number=id_number)
+            parent_username = child.parent.user.username
+            if parent_username != request.user.username:
+                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
         except KeyError:
-            return Response('id field is missing.', status=status.HTTP_400_BAD_REQUEST)
+            return Response('id_number field is missing.', status=status.HTTP_400_BAD_REQUEST)
         except Person.DoesNotExist:
             return Response('Parent does not exist.', status=status.HTTP_400_BAD_REQUEST)
         except Child.DoesNotExist:
-            return Response('The parent has no children.', status=status.HTTP_400_BAD_REQUEST)
+            return Response('The child not exist.', status=status.HTTP_400_BAD_REQUEST)
 
         serializer = ChildrenSerializer(child, read_only=True)
         serializer.data['parent']['user'].pop('password')
