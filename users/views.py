@@ -14,7 +14,7 @@ class LoginAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
 
         # Get the username and password
-        username = request.data.get('username', None)
+        username = request.data.get('phone_number', None)
         password = request.data.get('password', None)
 
         if not username or not password:
