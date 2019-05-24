@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'reports.apps.ReportsConfig',
     'users.apps.UsersConfig',
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
