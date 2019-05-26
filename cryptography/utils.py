@@ -5,6 +5,8 @@ from funtestic_backend.settings import DES_KEY, CBC_IV
 class CbcEngine:
 
     def __init__(self):
+        if DES_KEY is None or CBC_IV is None:
+            raise ValueError('Key and IV of CBC must be exported as variant variable')
         self.cbc = CBC(DES_KEY, CBC_IV)
 
     def encrypt(self, ascii_text):
