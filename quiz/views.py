@@ -31,7 +31,6 @@ class SaveChildGrade(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            print(serializer.validated_data)
             serializer.save()
         except IntegrityError:
             return Response('Quiz is already exists', status=status.HTTP_400_BAD_REQUEST)
