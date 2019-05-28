@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from children.models import Child
-from quiz.models import Quiz
 from reports.models import Report
 from django.utils import timezone
 

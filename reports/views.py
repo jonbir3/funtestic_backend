@@ -1,20 +1,20 @@
+from django.core.files.images import ImageFile
 from django.db import IntegrityError
 from rest_framework import status, exceptions
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from children.serializers import ChildrenSerializer
 from quiz.models import Quiz
 from reports.serializers import ReportSerializer
-from users.models import Person
-from .models import Child, Report
+from .models import Child
 from cryptography.utils import CbcEngine
-from django.utils import timezone
+
 
 class ReportList(APIView):
-    #authentication_classes = (TokenAuthentication,)
-    #permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
     def put(self, request):
         try:
             child_id = CbcEngine.get_engine().encrypt(request.data['child_id'])
@@ -35,8 +35,13 @@ class ReportList(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             serializer.save()
+
+            text_file = open("media/report.txt", "w")
+            text_file.write("report:\nname: {0}\nage: {1}\ncreated Date: {2}\ngrades:".format(child, CbcEngine.get_engine().decrypt(child.age),serializer.data['create_at']))
+            for q in quiz_of_child:
+                text_file.write("{0} ".format(CbcEngine.get_engine().decrypt(q.grade)))
+            text_file.close()
+
         except IntegrityError:
             return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
         return Response('The report added successfully for {} !'.format(child))
-
-# Create your views here.
