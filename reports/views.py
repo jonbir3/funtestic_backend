@@ -8,9 +8,9 @@ from children.serializers import ChildrenSerializer
 from quiz.models import Quiz
 from reports.serializers import ReportSerializer
 from users.models import Person
-from . models import Child
+from .models import Child, Report
 from cryptography.utils import CbcEngine
-
+from django.utils import timezone
 
 class ReportList(APIView):
     #authentication_classes = (TokenAuthentication,)
@@ -18,10 +18,8 @@ class ReportList(APIView):
     def put(self, request):
         try:
             child_id = CbcEngine.get_engine().encrypt(request.data['child_id'])
-            child = Child.objects.get(phone_number=child_id)
-            if child.user.username != request.user.username:
-                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
-            quiz_of_child = Quiz.objects.filter(child_id=child_id)
+            child = Child.objects.get(id_number=child_id)
+            quiz_of_child = Quiz.objects.filter(child=child)
         except KeyError:
             return Response('child_id field is missing.', status=status.HTTP_400_BAD_REQUEST)
         except Child.DoesNotExist:
@@ -30,13 +28,21 @@ class ReportList(APIView):
             return Response('The child has no quiz.', status=status.HTTP_400_BAD_REQUEST)
 
         request.data['child_id'] = CbcEngine.get_engine().encrypt(request.data['child_id'])
+
+        report = Report.objects.create(create_at=timezone.now().date(), child=child)
+        for q in quiz_of_child:
+            report.quizzes.add(q)
+        report.save()
+
+
         serializer = ReportSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            serializer.save()
-        except IntegrityError:
-            return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
-        return Response('The report added successfully!')
+
+        # if not serializer.is_valid():
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # try:
+        #     serializer.save()
+        # except IntegrityError:
+        #     return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
+        return Response('The report added successfully! {}'.format(list(quiz_of_child)))
 
 # Create your views here.
