@@ -36,8 +36,9 @@ class ReportList(APIView):
         try:
             serializer.save()
 
-            text_file = open("media/report.txt", "w")
-            text_file.write("report:\nname: {0}\nage: {1}\ncreated Date: {2}\ngrades:".format(child, CbcEngine.get_engine().decrypt(child.age),serializer.data['create_at']))
+            text_file = open("media/{}_report.txt".format(child), "w")
+            text_file.write("report:\nname: {0}\nage: {1}\ncreated Date: {2}\ngrades:"
+                            .format(child, CbcEngine.get_engine().decrypt(child.age), serializer.data['create_at']))
             for q in quiz_of_child:
                 text_file.write("{0} ".format(CbcEngine.get_engine().decrypt(q.grade)))
             text_file.close()
