@@ -45,3 +45,4 @@ class ReportList(APIView):
         except IntegrityError:
             return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
         return Response('The report added successfully for {} !'.format(child))
+
