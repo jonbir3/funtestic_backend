@@ -29,20 +29,14 @@ class ReportList(APIView):
 
         request.data['child_id'] = CbcEngine.get_engine().encrypt(request.data['child_id'])
 
-        report = Report.objects.create(create_at=timezone.now().date(), child=child)
-        for q in quiz_of_child:
-            report.quizzes.add(q)
-        report.save()
-
-
         serializer = ReportSerializer(data=request.data)
 
-        # if not serializer.is_valid():
-        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # try:
-        #     serializer.save()
-        # except IntegrityError:
-        #     return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
-        return Response('The report added successfully! {}'.format(list(quiz_of_child)))
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer.save()
+        except IntegrityError:
+            return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
+        return Response('The report added successfully for {} !'.format(child))
 
 # Create your views here.
