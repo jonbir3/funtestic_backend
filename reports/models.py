@@ -14,5 +14,5 @@ class Report(models.Model):
 
     def save(self, **kwargs):
         cbc_engine = CbcEngine.get_engine()
-        self.create_at = cbc_engine.encrypt(self.create_at)
+        self.create_at = cbc_engine.encrypt(str(self.create_at))
         super(Report, self).save(**kwargs)
