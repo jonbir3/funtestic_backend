@@ -10,6 +10,7 @@ from reports.serializers import ReportSerializer
 from users.models import Person
 from . models import Child
 from cryptography.utils import CbcEngine
+# from django.core.mail import EmailMessage
 
 
 class ReportList(APIView):
@@ -39,4 +40,29 @@ class ReportList(APIView):
             return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
         return Response('The report added successfully!')
 
-# Create your views here.
+
+# class SendReportToEmail(APIView):
+#
+#     authentication_classes = (TokenAuthentication,)
+#     permission_classes = (IsAuthenticated,)
+#
+#     def put(self, request):
+#         try:
+#             child_id = CbcEngine.get_engine().encrypt(request.data['child_id'])
+#             child = Child.objects.get(id_number=child_id)
+#             parent = child.parent
+#             if parent.user.username != request.user.username:
+#                 raise exceptions.AuthenticationFailed(detail='Not authorized request.')
+#         except KeyError:
+#             return Response('One of the fields are missing.', status=status.HTTP_400_BAD_REQUEST)
+#         except Child.DoesNotExist:
+#             return Response('child does not exist.', status=status.HTTP_400_BAD_REQUEST)
+#
+#         parent_email = parent.user.email
+#         report = 'media/reports/test.pdf'
+#         email = EmailMessage(
+#             'report for child', 'Here is the message.', 'from@me.com', [parent_email])
+#         email.attach_file(report)
+#         email.send()
+#         return Response('Report send successfully!')
+
