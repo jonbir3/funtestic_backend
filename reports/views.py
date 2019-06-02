@@ -4,25 +4,23 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from children.serializers import ChildrenSerializer
 from quiz.models import Quiz
 from reports.serializers import ReportSerializer
-from users.models import Person
-from . models import Child
+from .models import Child
 from cryptography.utils import CbcEngine
 # from django.core.mail import EmailMessage
+import fpdf
 
 
 class ReportList(APIView):
-    #authentication_classes = (TokenAuthentication,)
-    #permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
     def put(self, request):
         try:
             child_id = CbcEngine.get_engine().encrypt(request.data['child_id'])
-            child = Child.objects.get(phone_number=child_id)
-            if child.user.username != request.user.username:
-                raise exceptions.AuthenticationFailed(detail='Not authorized request.')
-            quiz_of_child = Quiz.objects.filter(child_id=child_id)
+            child = Child.objects.get(id_number=child_id)
+            quiz_of_child = Quiz.objects.filter(child=child)
         except KeyError:
             return Response('child_id field is missing.', status=status.HTTP_400_BAD_REQUEST)
         except Child.DoesNotExist:
@@ -31,11 +29,51 @@ class ReportList(APIView):
             return Response('The child has no quiz.', status=status.HTTP_400_BAD_REQUEST)
 
         request.data['child_id'] = CbcEngine.get_engine().encrypt(request.data['child_id'])
+
         serializer = ReportSerializer(data=request.data)
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             serializer.save()
+
+            # ___write report to text___:
+            text_file = open("media/{}_report.txt".format(child), "w")
+            text_file.write("report:\nname: {0}\nage: {1}\ncreated Date: {2}\ngrades: "
+                            .format(child, CbcEngine.get_engine().decrypt(child.age), serializer.data['create_at']))
+            i = 0
+            for q in quiz_of_child:
+                if i + 1 == len(quiz_of_child):
+                    text_file.write("{0} ".format(CbcEngine.get_engine().decrypt(q.grade)))
+                else:
+                    text_file.write("{0}, ".format(CbcEngine.get_engine().decrypt(q.grade)))
+                    i += 1
+            text_file.close()
+
+            # ____write report to pdf___:
+            pdf = fpdf.FPDF(format='letter')
+            pdf.add_page()
+            pdf.set_font("Arial", "BU", size=24)
+            pdf.set_text_color(0, 0, 128)
+
+            pdf.write(5, "report:\n\n")
+
+            pdf.set_font("Arial", size=12)
+            pdf.set_text_color(0, 0, 0)
+
+            pdf.write(5, "name: {0}\nage: {1}\ncreated Date: {2}\ngrades: "
+                      .format(child, CbcEngine.get_engine().decrypt(child.age), serializer.data['create_at']))
+
+            i = 0
+            for q in quiz_of_child:
+                if i + 1 == len(quiz_of_child):
+                    pdf.write(5, "{0} ".format(CbcEngine.get_engine().decrypt(q.grade)))
+                else:
+                    pdf.write(5, "{0}, ".format(CbcEngine.get_engine().decrypt(q.grade)))
+                i += 1
+            pdf.output("media/{}_report.pdf".format(child))
+            # ___________________________
+
         except IntegrityError:
             return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
         return Response('The report added successfully!')
@@ -66,3 +104,4 @@ class ReportList(APIView):
 #         email.send()
 #         return Response('Report send successfully!')
 
+        return Response('The report added successfully for {} !'.format(child))
