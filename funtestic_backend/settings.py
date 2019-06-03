@@ -30,8 +30,10 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'funtestic.tk',
     'www.funtestic.tk',
+    'android.funtestic.tk',
     'funtestic.ml',
     'www.funtestic.ml',
+    'android.funtestic.ml',
     'localhost',
     '127.0.0.1',
     '10.0.2.2',
