@@ -37,9 +37,9 @@ MAX_LENGTH_OF_ID = 9
 
 
 class Child(models.Model):
-    GENDER = (('M', 'Male'),
-              ('F', 'Female'),
-              ('O', 'Other'))
+    GENDER = (('male', 'Male'),
+              ('female', 'Female'),
+              ('other', 'Other'))
 
     # objects = ChildManager()
 
