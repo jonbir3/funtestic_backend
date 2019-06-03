@@ -6,7 +6,7 @@ from children.serializers import ChildrenSerializer
 
 
 class ReportSerializer(serializers.ModelSerializer):
-    child_id = serializers.PrimaryKeyRelatedField(
+    id_number = serializers.PrimaryKeyRelatedField(
         source='child',
         queryset=Child.objects.all()
     )
@@ -15,6 +15,6 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('child_id', 'create_at', 'child')
+        fields = ('id_number', 'create_at', 'child')
 
 

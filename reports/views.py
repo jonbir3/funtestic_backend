@@ -28,11 +28,12 @@ class ReportList(APIView):
         except Quiz.DoesNotExist:
             return Response('The child has no quiz.', status=status.HTTP_400_BAD_REQUEST)
 
-        request.data['child_id'] = CbcEngine.get_engine().encrypt(request.data['child_id'])
+        request.data['id_number'] = child_id
 
         serializer = ReportSerializer(data=request.data)
 
         if not serializer.is_valid():
+            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             serializer.save()
