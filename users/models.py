@@ -89,3 +89,8 @@ class TwoFactorAuthentication(models.Model):
                                                                        message='Numbers only',
                                                                        code='num_only')],
                                             primary_key=True)
+
+    def save(self, **kwargs):
+        cbc_engine = CbcEngine.get_engine()
+        self.code_to_verification = cbc_engine.encrypt(self.code_to_verification)
+        super(TwoFactorAuthentication, self).save(**kwargs)
