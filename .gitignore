@@ -4,3 +4,5 @@ env_bash.txt
 db.sqlite3
 funtestic_db.sqlite3
 api's
+funtestic_backend.sock
+funtestic_nginx.conf

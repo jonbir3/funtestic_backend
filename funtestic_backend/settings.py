@@ -28,7 +28,10 @@ CBC_IV = os.environ.get('FUNTESTIC_PROJECT_CBC_IV')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'giladg.tk',
+    'funtestic.tk',
+    'www.funtestic.tk',
+    'funtestic.ml',
+    'www.funtestic.ml',
     'localhost',
     '127.0.0.1',
     '10.0.2.2',
