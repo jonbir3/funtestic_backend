@@ -48,7 +48,8 @@ class Register(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             person = serializer.save()
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             return Response('The user is already exists', status=status.HTTP_400_BAD_REQUEST)
         Token.objects.create(user=person.user)
         return Response('Register successfully!')
