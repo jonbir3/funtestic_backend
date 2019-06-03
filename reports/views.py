@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from quiz.models import Quiz
 from reports.serializers import ReportSerializer
+from utilities.send_mail import send_mail
 from .models import Child
 from cryptography.utils import CbcEngine
 import fpdf
@@ -36,19 +37,6 @@ class ReportList(APIView):
         try:
             serializer.save()
 
-            # ___write report to text___:
-            text_file = open("media/{}_report.txt".format(child), "w")
-            text_file.write("report:\nname: {0}\nage: {1}\ncreated Date: {2}\ngrades: "
-                            .format(child, CbcEngine.get_engine().decrypt(child.age), serializer.data['create_at']))
-            i = 0
-            for q in quiz_of_child:
-                if i + 1 == len(quiz_of_child):
-                    text_file.write("{0} ".format(CbcEngine.get_engine().decrypt(q.grade)))
-                else:
-                    text_file.write("{0}, ".format(CbcEngine.get_engine().decrypt(q.grade)))
-                    i += 1
-            text_file.close()
-
             # ____write report to pdf___:
             pdf = fpdf.FPDF(format='letter')
             pdf.add_page()
@@ -59,9 +47,8 @@ class ReportList(APIView):
 
             pdf.set_font("Arial", size=12)
             pdf.set_text_color(0, 0, 0)
-
             pdf.write(5, "name: {0}\nage: {1}\ncreated Date: {2}\ngrades: "
-                      .format(child, CbcEngine.get_engine().decrypt(child.age), serializer.data['create_at']))
+                      .format(child, CbcEngine.get_engine().decrypt(child.age), (CbcEngine.get_engine().decrypt(serializer.data['create_at'])).split(' ')[0]))
 
             i = 0
             for q in quiz_of_child:
@@ -70,9 +57,14 @@ class ReportList(APIView):
                 else:
                     pdf.write(5, "{0}, ".format(CbcEngine.get_engine().decrypt(q.grade)))
                 i += 1
-            pdf.output("media/{}_report.pdf".format(child))
+
+            pdf_name = "{}_report.pdf".format(child)
+            subject = 'Report for child - Funtestic'
+            body = 'Hi! We sent you a report for your child.'
+            pdf.output("media/{}".format(pdf_name))
             # ___________________________
 
+            send_mail(subject, body, CbcEngine.get_engine().decrypt(child.parent.user.email), pdf_name)
         except IntegrityError:
-            return Response('The report is already exists', status=status.HTTP_400_BAD_REQUEST)
+            return Response("The report is already exists", status=status.HTTP_400_BAD_REQUEST)
         return Response('The report added successfully!')

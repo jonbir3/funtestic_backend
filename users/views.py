@@ -9,6 +9,10 @@ from rest_framework.response import Response
 from cryptography.utils import CbcEngine
 from users.models import Person
 from users.serializers import PersonSerializer
+from random import randint
+from users.models import TwoFactorAuthentication
+from utilities.send_mail import send_mail
+from smtplib import SMTPRecipientsRefused
 
 
 class LoginAuthentication(authentication.BaseAuthentication):
@@ -60,7 +64,21 @@ class Login(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        # TODO: generate password for two factor authentication
+        random_password = str(randint(100000, 999999))
+        login_user = request.user
+
+        two_fa = TwoFactorAuthentication(user=login_user, code_to_verification=random_password)
+        two_fa.save()
+
+        user_email_to_send = CbcEngine.get_engine().decrypt(login_user.email)
+        subject = 'Verification Code - Funtestic'
+        body = 'Hi, in order to login into Funtestic App - Please use the following security code: ' + \
+               random_password
+        try:
+            send_mail(subject, body, user_email_to_send)
+        except SMTPRecipientsRefused:
+            two_fa.delete()
+            raise exceptions.AuthenticationFailed(detail='Invalid email address.')
         return Response('Login successfully!')
 
 
@@ -69,8 +87,13 @@ class TwoFA(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        # TODO: check if 2fa correct
         is_ok = True
+        code_verification_to_check = CbcEngine.get_engine().encrypt(request.data['2fa_pass'])
+        two_fa = TwoFactorAuthentication.objects.get(user=request.user)
+        code_verification = two_fa.code_to_verification
+        two_fa.delete()
+        # if code_verification_to_check != code_verification:
+        #     is_ok = False  #TODO: Do not forget remove in from comment
         if not is_ok:
             raise exceptions.AuthenticationFailed(detail='Two factor authentication failed.')
         token = Token.objects.get(user=request.user)
