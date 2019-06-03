@@ -6,6 +6,7 @@ from cryptography.utils import CbcEngine
 MIN_LENGTH_OF_ID = 8
 MAX_LENGTH_OF_ID = 9
 LENGTH_OF_PHONE = 10
+LENGTH_OF_CODE = 6
 
 
 # class PersonQuerySet(models.query.QuerySet):
@@ -79,3 +80,12 @@ class Person(models.Model):
         if self.user_id is None:
             self.user = user
         super(Person, self).save(**kwargs)
+
+
+class TwoFactorAuthentication(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    code_to_verification = models.CharField(max_length=LENGTH_OF_CODE,
+                                            validators=[RegexValidator(regex='^[0-9]*$',
+                                                                       message='Numbers only',
+                                                                       code='num_only')],
+                                            primary_key=True)
