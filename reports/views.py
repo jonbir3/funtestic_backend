@@ -37,19 +37,6 @@ class ReportList(APIView):
         try:
             serializer.save()
 
-            # ___write report to text___:
-            # text_file = open("media/{}_report.txt".format(child), "w")
-            # text_file.write("report:\nname: {0}\nage: {1}\ncreated Date: {2}\ngrades: "
-            #                 .format(child, CbcEngine.get_engine().decrypt(child.age), serializer.data['create_at']))
-            # i = 0
-            # for q in quiz_of_child:
-            #     if i + 1 == len(quiz_of_child):
-            #         text_file.write("{0} ".format(CbcEngine.get_engine().decrypt(q.grade)))
-            #     else:
-            #         text_file.write("{0}, ".format(CbcEngine.get_engine().decrypt(q.grade)))
-            #         i += 1
-            # text_file.close()
-
             # ____write report to pdf___:
             pdf = fpdf.FPDF(format='letter')
             pdf.add_page()
@@ -76,15 +63,6 @@ class ReportList(APIView):
             body = 'Hi! We sent you a report for your child.'
             pdf.output("media/{}".format(pdf_name))
             # ___________________________
-
-            # print( "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            # print(subject)
-            # print(body)
-            # #print(child.parent.email)
-            # print(pdf_name)
-            #
-            # user = Child.objects.get(id=child.parent.id)
-            # print(user)
 
             send_mail(subject, body, CbcEngine.get_engine().decrypt(child.parent.user.email), pdf_name)
         except IntegrityError:
