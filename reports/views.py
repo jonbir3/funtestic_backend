@@ -18,7 +18,7 @@ class ReportList(APIView):
 
     def put(self, request):
         try:
-            child_id = CbcEngine.get_engine().encrypt(request.data['child_id'])
+            child_id = CbcEngine.get_engine().encrypt(request.data['id_number'])
             child = Child.objects.get(id_number=child_id)
             quiz_of_child = Quiz.objects.filter(child=child)
         except KeyError:
