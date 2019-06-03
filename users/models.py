@@ -83,12 +83,11 @@ class Person(models.Model):
 
 
 class TwoFactorAuthentication(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     code_to_verification = models.CharField(max_length=LENGTH_OF_CODE,
                                             validators=[RegexValidator(regex='^[0-9]*$',
                                                                        message='Numbers only',
-                                                                       code='num_only')],
-                                            primary_key=True)
+                                                                       code='num_only')])
 
     def save(self, **kwargs):
         cbc_engine = CbcEngine.get_engine()

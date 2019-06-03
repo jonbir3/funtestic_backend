@@ -68,7 +68,11 @@ class Login(APIView):
         login_user = request.user
 
         two_fa = TwoFactorAuthentication(user=login_user, code_to_verification=random_password)
-        two_fa.save()
+        try:
+            two_fa.save()
+        except IntegrityError as e:
+            return Response('{0} (probably you try to login twice sequentially)'.format(e),
+                            status=status.HTTP_400_BAD_REQUEST)
 
         user_email_to_send = CbcEngine.get_engine().decrypt(login_user.email)
         subject = 'Verification Code - Funtestic'
@@ -89,7 +93,11 @@ class TwoFA(APIView):
     def post(self, request):
         is_ok = True
         code_verification_to_check = CbcEngine.get_engine().encrypt(request.data['2fa_pass'])
-        two_fa = TwoFactorAuthentication.objects.get(user=request.user)
+        try:
+            two_fa = TwoFactorAuthentication.objects.get(user=request.user)
+        except TwoFactorAuthentication.DoesNotExist as e:
+            return Response('{0} (probably you try to do 2fa twice sequentially)'.format(e),
+                            status=status.HTTP_400_BAD_REQUEST)
         code_verification = two_fa.code_to_verification
         two_fa.delete()
         # if code_verification_to_check != code_verification:
