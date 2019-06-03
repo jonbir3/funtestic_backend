@@ -7,7 +7,9 @@ import os
 from funtestic_backend.settings import BASE_DIR
 
 FROM_USER = 'funtesticofficial@gmail.com'
-mail_password = os.environ.get('FROM_USER_PASSWORD')
+MAIL_PASSWORD = os.environ.get('FROM_USER_PASSWORD')
+if MAIL_PASSWORD is None:
+    raise ValueError('MAIL_PASSWORD in utilities must be exported as variant variable')
 
 
 def send_mail(subject, body, to_user, pdf_name=None):
@@ -28,6 +30,6 @@ def send_mail(subject, body, to_user, pdf_name=None):
     msg.attach(MIMEText(body, 'html'))
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login(msg['From'], mail_password)
+    server.login(msg['From'], MAIL_PASSWORD)
     server.sendmail(msg['From'], rcpt, msg.as_string())
     server.quit()
