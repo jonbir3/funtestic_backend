@@ -12,6 +12,7 @@ from users.serializers import PersonSerializer
 from random import randint
 from users.models import TwoFactorAuthentication
 from utilities.send_mail import send_mail
+from smtplib import SMTPRecipientsRefused
 
 
 class LoginAuthentication(authentication.BaseAuthentication):
@@ -73,7 +74,11 @@ class Login(APIView):
         subject = 'Verification Code - Funtestic'
         body = 'Hi, in order to login into Funtestic App - Please use the following security code: ' + \
                random_password
-        send_mail(subject, body, user_email_to_send)
+        try:
+            send_mail(subject, body, user_email_to_send)
+        except SMTPRecipientsRefused:
+            two_fa.delete()
+            raise exceptions.AuthenticationFailed(detail='Invalid email address.')
         return Response('Login successfully!')
 
 
