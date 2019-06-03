@@ -1,0 +1,4 @@
+FUNTESTIC_PROJECT_SK - the secret key of django project
+FUNTESTIC_PROJECT_CBC_KEY - the secret key of des
+FUNTESTIC_PROJECT_CBC_IV - the initial vector of CBC
+FROM_USER_PASSWORD - the password of the mail box
