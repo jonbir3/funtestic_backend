@@ -1,0 +1,2 @@
+sudo /etc/init.d/nginx restart
+uwsgi --socket funtestic_backend/funtestic_backend.sock --module funtestic_backend.wsgi --chmod-socket=664
