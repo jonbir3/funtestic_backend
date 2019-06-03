@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from cryptography.utils import CbcEngine
 from users.models import Person
 from users.serializers import PersonSerializer
+from random import randint
+from users.models import TwoFactorAuthentication
+from utilities.send_mail import send_mail
 
 
 class LoginAuthentication(authentication.BaseAuthentication):
@@ -60,7 +63,19 @@ class Login(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        # TODO: generate password for two factor authentication
+        random_password = str(randint(100000, 999999))
+        login_user = request.user
+
+        # test = TwoFactorAuthentication.objects.get(user=login_user)
+        # test.delete()
+        two_fa = TwoFactorAuthentication(user=login_user, code_to_verification=random_password)
+        two_fa.save()
+
+        user_email_to_send = CbcEngine.get_engine().decrypt(login_user.email)
+        subject = 'Verification Code - Funtestic'
+        body = 'Hi, in order to login into Funtestic App - Please use the following security code: ' + \
+               random_password
+        send_mail(subject, body, user_email_to_send)
         return Response('Login successfully!')
 
 
