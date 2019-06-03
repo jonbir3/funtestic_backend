@@ -9,7 +9,7 @@ from funtestic_backend.settings import BASE_DIR
 FROM_USER = 'funtesticofficial@gmail.com'
 MAIL_PASSWORD = os.environ.get('FROM_USER_PASSWORD')
 if MAIL_PASSWORD is None:
-    raise ValueError('MAIL_PASSWORD in utilities must be exported as variant variable')
+    raise ValueError('FROM_USER_PASSWORD in utilities must be exported as variant variable')
 
 
 def send_mail(subject, body, to_user, pdf_name=None):
