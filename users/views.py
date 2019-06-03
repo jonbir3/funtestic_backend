@@ -66,8 +66,6 @@ class Login(APIView):
         random_password = str(randint(100000, 999999))
         login_user = request.user
 
-        # test = TwoFactorAuthentication.objects.get(user=login_user)
-        # test.delete()
         two_fa = TwoFactorAuthentication(user=login_user, code_to_verification=random_password)
         two_fa.save()
 
@@ -84,8 +82,13 @@ class TwoFA(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        # TODO: check if 2fa correct
         is_ok = True
+        code_verification_to_check = CbcEngine.get_engine().encrypt(request.data['2fa_pass'])
+        two_fa = TwoFactorAuthentication.objects.get(user=request.user)
+        code_verification = two_fa.code_to_verification
+        two_fa.delete()
+        # if code_verification_to_check != code_verification:
+        #     is_ok = False  #TODO: Do not forget remove in from comment
         if not is_ok:
             raise exceptions.AuthenticationFailed(detail='Two factor authentication failed.')
         token = Token.objects.get(user=request.user)
