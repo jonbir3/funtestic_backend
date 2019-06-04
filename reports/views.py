@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from quiz.models import Quiz
 from reports.serializers import ReportSerializer
 from utilities.send_mail import send_mail
-from .models import Child
+from .models import Child, Report
 from cryptography.utils import CbcEngine
+from coverage.files import os
 import fpdf
 
 
@@ -36,8 +37,17 @@ class ReportList(APIView):
             print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            serializer.save()
+            pdf_name = "{}_report.pdf".format(child.id_number)
+            try:
+                report = Report.objects.get(child=child)
+            except Report.DoesNotExist as e:
+                report = None
+                print(e)
+            if report is not None:
+                os.unlink("media/{}".format(pdf_name))
+                report.delete()
 
+            serializer.save()
             # ____write report to pdf___:
             pdf = fpdf.FPDF(format='letter')
             pdf.add_page()
@@ -59,7 +69,6 @@ class ReportList(APIView):
                     pdf.write(5, "{0}, ".format(CbcEngine.get_engine().decrypt(q.grade)))
                 i += 1
 
-            pdf_name = "{}_report.pdf".format(child)
             subject = 'Report for child - Funtestic'
             body = 'Hi! We sent you a report for your child.'
             pdf.output("media/{}".format(pdf_name))
