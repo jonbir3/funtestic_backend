@@ -38,13 +38,17 @@ class ReportList(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
             pdf_name = "{}_report.pdf".format(child.id_number)
+            pdf_dir = "media"
+
+            if not os.path.exists(pdf_dir):
+                os.makedirs(pdf_dir)
             try:
                 report = Report.objects.get(child=child)
             except Report.DoesNotExist as e:
                 report = None
                 print(e)
             if report is not None:
-                os.unlink("media/{}".format(pdf_name))
+                os.unlink('{0}/{1}'.format(pdf_dir, pdf_name))
                 report.delete()
 
             serializer.save()
@@ -71,7 +75,7 @@ class ReportList(APIView):
 
             subject = 'Report for child - Funtestic'
             body = 'Hi! We sent you a report for your child.'
-            pdf.output("media/{}".format(pdf_name))
+            pdf.output('{0}/{1}'.format(pdf_dir, pdf_name))
             # ___________________________
 
             send_mail(subject, body, CbcEngine.get_engine().decrypt(child.parent.user.email), pdf_name)
