@@ -9,7 +9,7 @@ from reports.serializers import ReportSerializer
 from utilities.send_mail import send_mail
 from .models import Child, Report
 from cryptography.utils import CbcEngine
-from coverage.files import os
+import os
 import fpdf
 
 

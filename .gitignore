@@ -6,3 +6,4 @@ funtestic_db.sqlite3
 api's
 funtestic_backend.sock
 funtestic_nginx.conf
+mysite.sock
