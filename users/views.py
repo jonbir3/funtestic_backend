@@ -67,10 +67,16 @@ class Login(APIView):
         random_password = str(randint(100000, 999999))
         login_user = request.user
 
+        try:
+            TwoFactorAuthentication.objects.get(user=request.user).delete()
+        except TwoFactorAuthentication.DoesNotExists as e:
+            print(e)
+
         two_fa = TwoFactorAuthentication(user=login_user, code_to_verification=random_password)
         try:
             two_fa.save()
         except IntegrityError as e:
+            print(e)
             return Response('{0} (probably you try to login twice sequentially)'.format(e),
                             status=status.HTTP_400_BAD_REQUEST)
 
