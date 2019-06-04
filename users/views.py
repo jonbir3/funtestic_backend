@@ -97,7 +97,6 @@ class TwoFA(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        is_ok = True
         code_verification_to_check = CbcEngine.get_engine().encrypt(request.data['2fa_pass'])
         try:
             two_fa = TwoFactorAuthentication.objects.get(user=request.user)
@@ -105,11 +104,9 @@ class TwoFA(APIView):
             return Response('{0} (probably you try to do 2fa twice sequentially)'.format(e),
                             status=status.HTTP_400_BAD_REQUEST)
         code_verification = two_fa.code_to_verification
-        two_fa.delete()
-        # if code_verification_to_check != code_verification:
-        #     is_ok = False  #TODO: Do not forget remove in from comment
-        if not is_ok:
+        if code_verification_to_check != code_verification:
             raise exceptions.AuthenticationFailed(detail='Two factor authentication failed.')
+        two_fa.delete()
         token = Token.objects.get(user=request.user)
         return Response({'token': token.key})
 
