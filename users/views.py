@@ -69,7 +69,7 @@ class Login(APIView):
 
         try:
             TwoFactorAuthentication.objects.get(user=request.user).delete()
-        except TwoFactorAuthentication.DoesNotExists as e:
+        except TwoFactorAuthentication.DoesNotExist as e:
             print(e)
 
         two_fa = TwoFactorAuthentication(user=login_user, code_to_verification=random_password)
